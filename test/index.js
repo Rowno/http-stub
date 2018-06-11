@@ -116,14 +116,14 @@ test(`returns an error when there's no more stubs`, async t => {
   t.is(error.response.body.code, 'NO_STUBS')
 })
 
-test(`verify() throws an error when requests missed a stub`, async t => {
+test(`verify() throws an error when a request wasn't stubbed`, async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
   await got(httpStub.url, {throwHttpErrors: false})
 
   const error = await t.throws(() => httpStub.verify())
-  t.is(error.message, `1 HTTP request wasn't stubbed`)
+  t.true(error.message.includes(`1 HTTP request wasn՚t stubbed`))
 })
 
 test(`verify() doesn't throw an error when all requests hit stubs`, async t => {

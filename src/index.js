@@ -1,5 +1,6 @@
 'use strict'
 const url = require('url')
+const util = require('util')
 const micro = require('micro')
 const joi = require('joi')
 
@@ -34,7 +35,7 @@ class HttpStub {
     this.requestedOnce = false
     this.requestedTwice = false
     this.requestedThrice = false
-    this.stubMisses = 0
+    this.unStubbedRequests = []
 
     this.start = this.start.bind(this)
     this.stop = this.stop.bind(this)
@@ -95,11 +96,27 @@ class HttpStub {
   }
 
   verify() {
-    if (this.stubMisses === 1) {
-      throw new Error(`1 HTTP request wasn't stubbed`)
-    } else if (this.stubMisses > 1) {
-      throw new Error(`${this.stubMisses} HTTP requests weren't stubbed`)
+    const unStubbedCount = this.unStubbedRequests.length
+
+    if (unStubbedCount === 0) {
+      return
     }
+
+    let prettyRequests = this.unStubbedRequests.map(request => {
+      const clonedRequest = Object.assign({}, request)
+      clonedRequest.url = clonedRequest.url.href
+      return clonedRequest
+    })
+    prettyRequests = util.inspect(prettyRequests)
+
+    let message
+    if (unStubbedCount === 1) {
+      message = `1 HTTP request wasn՚t stubbed:\n${prettyRequests}`
+    } else if (unStubbedCount > 1) {
+      message = `${unStubbedCount} HTTP requests weren՚t stubbed:\n${prettyRequests}`
+    }
+
+    throw new Error(message)
   }
 
   async _handler(req, res) {
@@ -132,7 +149,7 @@ class HttpStub {
     const response = this._responses.shift()
 
     if (!response) {
-      this.stubMisses += 1
+      this.unStubbedRequests.push(request)
       return micro.send(res, 400, {
         message: "You've run out of stubs! 😱",
         code: 'NO_STUBS'
