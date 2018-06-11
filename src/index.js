@@ -1,15 +1,61 @@
 'use strict'
 const url = require('url')
 const micro = require('micro')
+const joi = require('joi')
+
+// Derp function sleep(ms) {
+//   return new Promise(resolve => {
+//     setTimeout(resolve, ms)
+//   })
+// }
+
+const stubSchema = joi
+  .object({
+    method: joi
+      .string()
+      .uppercase()
+      .required(),
+    path: joi.string().required(),
+    headers: joi.object().pattern(/.*/, joi.string()),
+    body: joi.any().required(),
+    delay: joi
+      .number()
+      .min(0)
+      .integer()
+  })
+  .default()
 
 class HttpStub {
   constructor() {
     this.requests = []
+    this.notRequested = true
+    this.requested = false
+    this.requestedOnce = false
+    this.requestedTwice = false
+    this.requestedThrice = false
 
-    this._handler = this._handler.bind(this)
+    this.start = this.start.bind(this)
+    this.stop = this.stop.bind(this)
+    this.addStub = this.addStub.bind(this)
+
+    // Make private properties non-enumerable to make ava's magic assertions clean ✨
+    Object.defineProperty(this, '_handler', {
+      value: this._handler.bind(this)
+    })
+    Object.defineProperty(this, '_server', {
+      writable: true,
+      value: null
+    })
+    Object.defineProperty(this, '_responses', {
+      value: []
+    })
   }
 
   async start() {
+    if (this._server) {
+      return
+    }
+
     this._server = micro(this._handler)
 
     return new Promise((resolve, reject) => {
@@ -26,7 +72,7 @@ class HttpStub {
   }
 
   async stop() {
-    if (!this._server || !this._server.listening) {
+    if (!this._server) {
       return
     }
 
@@ -35,13 +81,16 @@ class HttpStub {
         if (error) {
           reject(error)
         } else {
+          this._server = null
           resolve()
         }
       })
     })
   }
 
-  stub() {}
+  addStub(stub) {
+    this._responses.push(joi.attempt(stub, stubSchema))
+  }
 
   async _handler(req, res) {
     const body = await micro.json(req)
@@ -53,8 +102,18 @@ class HttpStub {
       body
     })
 
+    this.notRequested = false
+    this.requested = true
+    this.requestedOnce = this.requests.length === 1
+    this.requestedTwice = this.requests.length === 2
+    this.requestedThrice = this.requests.length === 3
+
     micro.send(res, 200, {message: 'Hello world'})
   }
 }
 
-module.exports = HttpStub
+module.exports = async () => {
+  const httpStub = new HttpStub()
+  await httpStub.start()
+  return httpStub
+}

@@ -24,6 +24,7 @@
     "node": ">=8.10"
   },
   "dependencies": {
+    "joi": "^13.4.0",
     "micro": "^9.3.2"
   },
   "devDependencies": {
