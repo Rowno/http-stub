@@ -14,7 +14,8 @@ test('records a request', async t => {
 
   await got(httpStub.url, {
     json: true,
-    body: {wow: 'such request'}
+    body: {wow: 'such request'},
+    throwHttpErrors: false
   })
 
   const req = httpStub.requests[0]
@@ -24,21 +25,151 @@ test('records a request', async t => {
   t.deepEqual(req.body, {wow: 'such request'})
 })
 
-test('stops the server', async t => {
+test('stubs a response', async t => {
   const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({
+    statusCode: 203,
+    headers: {'x-wow': 'such header'},
+    body: {wow: 'such response'}
+  })
+
+  const res = await got(httpStub.url, {
+    json: true,
+    body: {wow: 'such request'},
+    throwHttpErrors: false
+  })
+
+  t.is(res.statusCode, 203)
+  t.is(res.headers['x-wow'], 'such header')
+  t.deepEqual(res.body, {wow: 'such response'})
+})
+
+test('can delay a response', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({
+    statusCode: 200,
+    delay: 1000
+  })
+
+  const start = Date.now()
+  await got(httpStub.url)
+  const end = Date.now()
+  const duration = end - start
+
+  t.true(duration > 1000)
+})
+
+test('supports json request bodies', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
 
   await got(httpStub.url, {
     json: true,
+    body: {wow: 'such json'},
+    throwHttpErrors: false
+  })
+
+  t.deepEqual(httpStub.requests[0].body, {wow: 'such json'})
+})
+
+test('supports plain text request bodies', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  await got(httpStub.url, {
+    body: 'wow, such text',
+    headers: {
+      'content-type': 'text/plain'
+    },
+    throwHttpErrors: false
+  })
+
+  t.is(httpStub.requests[0].body, 'wow, such text')
+})
+
+test('supports buffer request bodies', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  await got(httpStub.url, {
+    body: Buffer.from('wow, such buffer'),
+    headers: {
+      'content-type': 'application/octet-stream'
+    },
+    throwHttpErrors: false
+  })
+
+  t.true(httpStub.requests[0].body instanceof Buffer)
+  t.is(httpStub.requests[0].body.toString(), 'wow, such buffer')
+})
+
+test(`returns an error when there's no more stubs`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  const error = await t.throws(got(httpStub.url, {json: true}))
+  t.is(error.statusCode, 400)
+  t.is(error.response.body.code, 'NO_STUBS')
+})
+
+test(`verify() throws an error when requests missed a stub`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  await got(httpStub.url, {throwHttpErrors: false})
+
+  const error = await t.throws(() => httpStub.verify())
+  t.is(error.message, `1 HTTP request wasn't stubbed`)
+})
+
+test(`verify() doesn't throw an error when all requests hit stubs`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({
+    statusCode: 200
+  })
+
+  await got(httpStub.url)
+
+  t.notThrows(() => httpStub.verify())
+})
+
+test(`the stub body can be a callback function`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({
+    statusCode: 200,
+    body: req => {
+      t.is(req.method, 'POST')
+      t.is(req.url.href, '/')
+      t.is(req.headers['content-type'], 'application/json')
+      t.deepEqual(req.body, {wow: 'such request'})
+      return {wow: 'such body callback'}
+    }
+  })
+
+  const res = await got(httpStub.url, {
+    json: true,
     body: {wow: 'such request'}
   })
+
+  t.deepEqual(res.body, {wow: 'such body callback'})
+})
+
+test('can stop the server', async t => {
+  const httpStub = await createHttpStub()
+
+  await got(httpStub.url, {throwHttpErrors: false})
   await httpStub.stop()
 
   const error = await t.throws(
-    got(httpStub.url, {
-      json: true,
-      body: {wow: 'such request'},
-      timeout: 500
-    })
+    got(httpStub.url, {throwHttpErrors: false, timeout: 500})
   )
   t.is(error.code, 'ETIMEDOUT')
 })
@@ -59,7 +190,7 @@ test('one request', async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {json: true, body: {}})
+  await got(httpStub.url, {throwHttpErrors: false})
 
   t.is(httpStub.requests.length, 1)
   t.false(httpStub.notRequested)
@@ -74,8 +205,8 @@ test('two requests', async t => {
   t.context.httpStub = httpStub
 
   await Promise.all([
-    got(httpStub.url, {json: true, body: {}}),
-    got(httpStub.url, {json: true, body: {}})
+    got(httpStub.url, {throwHttpErrors: false}),
+    got(httpStub.url, {throwHttpErrors: false})
   ])
 
   t.is(httpStub.requests.length, 2)
@@ -91,9 +222,9 @@ test('three requests', async t => {
   t.context.httpStub = httpStub
 
   await Promise.all([
-    got(httpStub.url, {json: true, body: {}}),
-    got(httpStub.url, {json: true, body: {}}),
-    got(httpStub.url, {json: true, body: {}})
+    got(httpStub.url, {throwHttpErrors: false}),
+    got(httpStub.url, {throwHttpErrors: false}),
+    got(httpStub.url, {throwHttpErrors: false})
   ])
 
   t.is(httpStub.requests.length, 3)
