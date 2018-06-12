@@ -41,6 +41,7 @@ class HttpStub {
     this.start = this.start.bind(this)
     this.stop = this.stop.bind(this)
     this.addStub = this.addStub.bind(this)
+    this.verify = this.verify.bind(this)
 
     // Make private properties non-enumerable to make ava's magic assertions clean ✨
     Object.defineProperty(this, '_handler', {
@@ -97,6 +98,11 @@ class HttpStub {
   }
 
   verify() {
+    this._verifyUnStubbedRequests()
+    this._verifyUnusedStubs()
+  }
+
+  _verifyUnStubbedRequests() {
     const unStubbedCount = this.unStubbedRequests.length
 
     if (unStubbedCount === 0) {
@@ -115,6 +121,25 @@ class HttpStub {
       message = `1 HTTP request wasn՚t stubbed:\n${prettyRequests}`
     } else if (unStubbedCount > 1) {
       message = `${unStubbedCount} HTTP requests weren՚t stubbed:\n${prettyRequests}`
+    }
+
+    throw new Error(message)
+  }
+
+  _verifyUnusedStubs() {
+    const unusedStubCount = this._responses.length
+
+    if (unusedStubCount === 0) {
+      return
+    }
+
+    const prettyResponses = util.inspect(this._responses)
+
+    let message
+    if (unusedStubCount === 1) {
+      message = `1 HTTP stub wasn't used:\n${prettyResponses}`
+    } else if (unusedStubCount > 1) {
+      message = `${unusedStubCount} HTTP stubs weren՚t used:\n${prettyResponses}`
     }
 
     throw new Error(message)

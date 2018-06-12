@@ -130,7 +130,7 @@ test(`verify() throws an error when a request wasn't stubbed`, async t => {
 
   await got(httpStub.url, {throwHttpErrors: false})
 
-  const error = await t.throws(() => httpStub.verify())
+  const error = t.throws(() => httpStub.verify())
   t.true(error.message.includes(`1 HTTP request wasn՚t stubbed`))
 })
 
@@ -139,7 +139,26 @@ test(`verify() doesn't throw an error when all requests hit stubs`, async t => {
   t.context.httpStub = httpStub
 
   httpStub.addStub()
+  await got(httpStub.url)
 
+  t.notThrows(() => httpStub.verify())
+})
+
+test(`verify() throws an error when a stub wasn't used`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub()
+
+  const error = t.throws(() => httpStub.verify())
+  t.true(error.message.includes(`1 HTTP stub wasn't used`))
+})
+
+test(`verify() doesn't throw an error when all stubs are used`, async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub()
   await got(httpStub.url)
 
   t.notThrows(() => httpStub.verify())
