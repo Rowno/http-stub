@@ -17,7 +17,7 @@ const stubSchema = joi
       .min(100)
       .max(599)
       .integer()
-      .required(),
+      .default(200),
     headers: joi.object().pattern(/.*/, joi.string()),
     body: joi.any(),
     delay: joi

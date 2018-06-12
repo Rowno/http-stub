@@ -50,10 +50,7 @@ test('can delay a response', async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  httpStub.addStub({
-    statusCode: 200,
-    delay: 1000
-  })
+  httpStub.addStub({delay: 1000})
 
   const start = Date.now()
   await got(httpStub.url)
@@ -67,10 +64,7 @@ test('can simulate a network error', async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  httpStub.addStub({
-    statusCode: 200,
-    networkError: true
-  })
+  httpStub.addStub({networkError: true})
 
   const error = await t.throws(got(httpStub.url, {retries: 0}))
   t.is(error.code, 'ECONNRESET')
@@ -144,9 +138,7 @@ test(`verify() doesn't throw an error when all requests hit stubs`, async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  httpStub.addStub({
-    statusCode: 200
-  })
+  httpStub.addStub()
 
   await got(httpStub.url)
 
@@ -158,7 +150,6 @@ test(`the stub body can be a callback function`, async t => {
   t.context.httpStub = httpStub
 
   httpStub.addStub({
-    statusCode: 200,
     body: req => {
       t.is(req.method, 'POST')
       t.is(req.url.href, '/')
