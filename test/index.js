@@ -1,6 +1,11 @@
-const test = require('ava')
-const got = require('got')
-const createHttpStub = require('../src')
+import util from 'util'
+import test from 'ava'
+import got from 'got'
+import selfsigned from 'selfsigned'
+import createHttpStub from '../src'
+import getCertificate from './helpers/get-certificate'
+
+const generateCertificate = util.promisify(selfsigned.generate)
 
 test.afterEach.always(async t => {
   if (t.context.httpStub) {
@@ -57,7 +62,7 @@ test('can delay a response', async t => {
   const end = Date.now()
   const duration = end - start
 
-  t.true(duration > 1000)
+  t.true(duration >= 1000)
 })
 
 test('can simulate a network error', async t => {
@@ -184,6 +189,36 @@ test(`the stub body can be a callback function`, async t => {
   })
 
   t.deepEqual(res.body, {wow: 'such body callback'})
+})
+
+test(`supports self signed https`, async t => {
+  const httpStub = await createHttpStub({https: true})
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({body: 'such https, wow'})
+
+  const error = await t.throws(got(httpStub.url))
+  t.is(error.code, 'DEPTH_ZERO_SELF_SIGNED_CERT')
+  t.is(error.protocol, 'https:')
+
+  const response = await got(httpStub.url, {rejectUnauthorized: false})
+  t.is(response.body, 'such https, wow')
+})
+
+test(`supports custom https certificate`, async t => {
+  const certificate = await generateCertificate()
+  const httpStub = await createHttpStub({
+    https: {
+      key: certificate.private,
+      cert: certificate.cert
+    }
+  })
+  t.context.httpStub = httpStub
+
+  httpStub.addStub()
+
+  const serverCertificate = await getCertificate(httpStub.url)
+  t.is(serverCertificate.cert, certificate.cert)
 })
 
 test('can stop the server', async t => {

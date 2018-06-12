@@ -1,14 +1,35 @@
 'use strict'
 const url = require('url')
 const util = require('util')
+const https = require('https')
 const micro = require('micro')
 const joi = require('joi')
+const selfSignedCert = require('openssl-self-signed-certificate')
 
 function sleep(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
 }
+
+const optionsSchema = joi
+  .object({
+    https: [
+      joi.bool(),
+      joi.object({
+        key: joi
+          .alternatives()
+          .try(joi.binary(), joi.string())
+          .required(),
+        cert: joi
+          .alternatives()
+          .try(joi.binary(), joi.string())
+          .required(),
+        passphrase: joi.string()
+      })
+    ]
+  })
+  .default()
 
 const stubSchema = joi
   .object({
@@ -29,7 +50,7 @@ const stubSchema = joi
   .default()
 
 class HttpStub {
-  constructor() {
+  constructor(options = {}) {
     this.requests = []
     this.notRequested = true
     this.requested = false
@@ -43,7 +64,18 @@ class HttpStub {
     this.addStub = this.addStub.bind(this)
     this.verify = this.verify.bind(this)
 
+    if (options.https === true) {
+      options.https = {
+        key: selfSignedCert.key,
+        cert: selfSignedCert.cert,
+        passphrase: selfSignedCert.passphrase
+      }
+    }
+
     // Make private properties non-enumerable to make ava's magic assertions clean ✨
+    Object.defineProperty(this, '_options', {
+      value: joi.attempt(options, optionsSchema)
+    })
     Object.defineProperty(this, '_handler', {
       value: this._handler.bind(this)
     })
@@ -61,14 +93,25 @@ class HttpStub {
       return
     }
 
-    this._server = micro(this._handler)
+    if (this._options.https) {
+      this._server = https.createServer(this._options.https, (req, res) =>
+        micro.run(req, res, this._handler)
+      )
+    } else {
+      this._server = micro(this._handler)
+    }
 
     return new Promise((resolve, reject) => {
       this._server.once('error', reject)
 
       this._server.listen(0, '127.0.0.1', () => {
         const {port} = this._server.address()
-        this.url = `http://127.0.0.1:${port}`
+
+        if (this._options.https) {
+          this.url = `https://127.0.0.1:${port}`
+        } else {
+          this.url = `http://127.0.0.1:${port}`
+        }
 
         this._server.removeListener('error', reject)
         resolve()
@@ -206,8 +249,8 @@ class HttpStub {
   }
 }
 
-module.exports = async () => {
-  const httpStub = new HttpStub()
+module.exports = async options => {
+  const httpStub = new HttpStub(options)
   await httpStub.start()
   return httpStub
 }

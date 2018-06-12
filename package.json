@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "joi": "^13.4.0",
-    "micro": "^9.3.2"
+    "micro": "^9.3.2",
+    "openssl-self-signed-certificate": "^1.1.6"
   },
   "devDependencies": {
     "ava": "^0.25.0",
@@ -32,6 +33,7 @@
     "got": "^8.3.1",
     "husky": "^0.14.3",
     "lint-staged": "^7.1.2",
+    "selfsigned": "^1.10.3",
     "xo": "^0.21.1"
   },
   "xo": {
