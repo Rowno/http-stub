@@ -63,6 +63,19 @@ test('can delay a response', async t => {
   t.true(duration > 1000)
 })
 
+test('can simulate a network error', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  httpStub.addStub({
+    statusCode: 200,
+    networkError: true
+  })
+
+  const error = await t.throws(got(httpStub.url, {retries: 0}))
+  t.is(error.code, 'ECONNRESET')
+})
+
 test('supports json request bodies', async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
@@ -112,8 +125,9 @@ test(`returns an error when there's no more stubs`, async t => {
   t.context.httpStub = httpStub
 
   const error = await t.throws(got(httpStub.url, {json: true}))
-  t.is(error.statusCode, 400)
-  t.is(error.response.body.code, 'NO_STUBS')
+  t.is(error.statusCode, 418)
+  t.is(error.statusMessage, 'No Stubs')
+  t.true(error.response.body.includes('🙅'))
 })
 
 test(`verify() throws an error when a request wasn't stubbed`, async t => {

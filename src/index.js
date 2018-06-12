@@ -23,7 +23,8 @@ const stubSchema = joi
     delay: joi
       .number()
       .min(0)
-      .integer()
+      .integer(),
+    networkError: joi.bool()
   })
   .default()
 
@@ -150,14 +151,18 @@ class HttpStub {
 
     if (!response) {
       this.unStubbedRequests.push(request)
-      return micro.send(res, 400, {
-        message: "You've run out of stubs! 😱",
-        code: 'NO_STUBS'
-      })
+      res.writeHead(418, 'No Stubs', {})
+      res.end(`You don't have any stubs left! 🙅`)
+      return
     }
 
     if (response.delay) {
       await sleep(response.delay)
+    }
+
+    if (response.networkError) {
+      req.destroy()
+      return
     }
 
     if (response.headers) {
