@@ -52,12 +52,13 @@ const stubSchema = joi
 class HttpStub {
   constructor(options = {}) {
     this.requests = []
+    this.unStubbedRequests = []
+    this.stubs = []
     this.notRequested = true
     this.requested = false
     this.requestedOnce = false
     this.requestedTwice = false
     this.requestedThrice = false
-    this.unStubbedRequests = []
 
     this.start = this.start.bind(this)
     this.stop = this.stop.bind(this)
@@ -82,9 +83,6 @@ class HttpStub {
     Object.defineProperty(this, '_server', {
       writable: true,
       value: null
-    })
-    Object.defineProperty(this, '_responses', {
-      value: []
     })
   }
 
@@ -137,7 +135,7 @@ class HttpStub {
   }
 
   addStub(stub) {
-    this._responses.push(joi.attempt(stub, stubSchema))
+    this.stubs.push(joi.attempt(stub, stubSchema))
   }
 
   verify() {
@@ -170,19 +168,19 @@ class HttpStub {
   }
 
   _verifyUnusedStubs() {
-    const unusedStubCount = this._responses.length
+    const unusedStubCount = this.stubs.length
 
     if (unusedStubCount === 0) {
       return
     }
 
-    const prettyResponses = util.inspect(this._responses)
+    const prettyStubs = util.inspect(this.stubs)
 
     let message
     if (unusedStubCount === 1) {
-      message = `1 HTTP stub wasn't used:\n${prettyResponses}`
+      message = `1 HTTP stub wasn't used:\n${prettyStubs}`
     } else if (unusedStubCount > 1) {
-      message = `${unusedStubCount} HTTP stubs weren՚t used:\n${prettyResponses}`
+      message = `${unusedStubCount} HTTP stubs weren՚t used:\n${prettyStubs}`
     }
 
     throw new Error(message)
@@ -215,36 +213,36 @@ class HttpStub {
     this.requestedTwice = this.requests.length === 2
     this.requestedThrice = this.requests.length === 3
 
-    const response = this._responses.shift()
+    const stub = this.stubs.shift()
 
-    if (!response) {
+    if (!stub) {
       this.unStubbedRequests.push(request)
       res.writeHead(418, 'No Stubs', {})
       res.end(`You don't have any stubs left! 🙅`)
       return
     }
 
-    if (response.delay) {
-      await sleep(response.delay)
+    if (stub.delay) {
+      await sleep(stub.delay)
     }
 
-    if (response.networkError) {
+    if (stub.networkError) {
       req.destroy()
       return
     }
 
-    if (response.headers) {
-      for (const name of Object.keys(response.headers)) {
-        const value = response.headers[name]
+    if (stub.headers) {
+      for (const name of Object.keys(stub.headers)) {
+        const value = stub.headers[name]
         res.setHeader(name, value)
       }
     }
 
-    if (typeof response.body === 'function') {
-      const body = await response.body(request)
-      micro.send(res, response.statusCode, body)
+    if (typeof stub.body === 'function') {
+      const body = await stub.body(request)
+      micro.send(res, stub.statusCode, body)
     } else {
-      micro.send(res, response.statusCode, response.body)
+      micro.send(res, stub.statusCode, stub.body)
     }
   }
 }
