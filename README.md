@@ -100,7 +100,7 @@ A stubbed HTTP server instance. It contains methods for controlling the server a
 
 Returns: `Promise`
 
-Starts the HTTP server. You shouldn't normally need to call this because [`createHttpStub()`](#createhttpstub) calls it for you.
+Starts the HTTP server. You shouldn't normally need to call this because [`createHttpStub()`](#createhttpstuboptions) calls it for you.
 
 #### stop()
 
