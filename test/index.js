@@ -84,8 +84,28 @@ test('supports json request bodies', async t => {
     body: {wow: 'such json'},
     throwHttpErrors: false
   })
+  const request = httpStub.requests[0]
 
-  t.deepEqual(httpStub.requests[0].body, {wow: 'such json'})
+  t.deepEqual(request.body, {wow: 'such json'})
+  t.deepEqual(request.headers['content-type'], 'application/json')
+})
+
+test('supports urlencoded request bodies', async t => {
+  const httpStub = await createHttpStub()
+  t.context.httpStub = httpStub
+
+  await got(httpStub.url, {
+    form: true,
+    body: {wow: 'such json'},
+    throwHttpErrors: false
+  })
+  const request = httpStub.requests[0]
+
+  t.deepEqual(request.body, {wow: 'such json'})
+  t.deepEqual(
+    request.headers['content-type'],
+    'application/x-www-form-urlencoded'
+  )
 })
 
 test('supports plain text request bodies', async t => {

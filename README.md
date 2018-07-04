@@ -7,7 +7,7 @@
 - Real HTTP server (no monkey patching).
 - Blazing fast.
 - Stub response headers, status code and body.
-- Supports text, JSON and Buffer request bodies.
+- Supports text, JSON, urlencoded and Buffer request bodies.
 - Simulate slow responses.
 - Simulate network errors.
 - Minimal boilerplate.
@@ -181,7 +181,7 @@ The request's HTTP headers.
 
 Type: `object`, `array`, `string` or `Buffer`
 
-The request's body. It'll automatically be decoded based on the `content-type` header you send. `application/json` will be JSON decoded, `text/*` will be converted to a string, and everything else will be a Buffer.
+The request's body. It'll automatically be decoded based on the `content-type` header you send. `application/json` will be JSON decoded, `application/x-www-form-urlencoded` will be parsed using the `querystring` module, `text/*` will be converted to a string, and everything else will be a Buffer.
 
 #### unStubbedRequests
 

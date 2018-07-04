@@ -1,5 +1,6 @@
 'use strict'
 const url = require('url')
+const querystring = require('querystring')
 const util = require('util')
 const https = require('https')
 const micro = require('micro')
@@ -192,6 +193,9 @@ class HttpStub {
 
     if (contentType.startsWith('application/json')) {
       body = await micro.json(req)
+    } else if (contentType.startsWith('application/x-www-form-urlencoded')) {
+      const text = await micro.text(req)
+      body = querystring.parse(text)
     } else if (contentType.startsWith('text/')) {
       body = await micro.text(req)
     } else {
