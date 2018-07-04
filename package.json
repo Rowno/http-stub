@@ -1,6 +1,6 @@
 {
   "name": "@rowno/http-stub",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Simple HTTP stubbing library for Node.js",
   "author": "Roland Warmerdam (https://roland.codes)",
   "keywords": [
