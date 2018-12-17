@@ -12,6 +12,7 @@
   "repository": "Rowno/http-stub",
   "license": "MIT",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "files": [
     "src"
   ],
