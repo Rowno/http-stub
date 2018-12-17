@@ -152,7 +152,7 @@ class HttpStub {
     }
 
     let prettyRequests = this.unStubbedRequests.map(request => {
-      const clonedRequest = Object.assign({}, request)
+      const clonedRequest = {...request}
       clonedRequest.url = clonedRequest.url.href
       return clonedRequest
     })

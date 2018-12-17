@@ -71,7 +71,7 @@ test('can simulate a network error', async t => {
 
   httpStub.addStub({networkError: true})
 
-  const error = await t.throws(got(httpStub.url, {retries: 0}))
+  const error = await t.throwsAsync(got(httpStub.url, {retry: 0}))
   t.is(error.code, 'ECONNRESET')
 })
 
@@ -143,7 +143,7 @@ test(`returns an error when there's no more stubs`, async t => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  const error = await t.throws(got(httpStub.url, {json: true}))
+  const error = await t.throwsAsync(got(httpStub.url, {json: true}))
   t.is(error.statusCode, 418)
   t.is(error.statusMessage, 'No Stubs')
   t.true(error.response.body.includes('🙅'))
@@ -217,7 +217,7 @@ test(`supports self signed https`, async t => {
 
   httpStub.addStub({body: 'such https, wow'})
 
-  const error = await t.throws(got(httpStub.url))
+  const error = await t.throwsAsync(got(httpStub.url))
   t.is(error.code, 'DEPTH_ZERO_SELF_SIGNED_CERT')
   t.is(error.protocol, 'https:')
 
@@ -247,10 +247,10 @@ test('can stop the server', async t => {
   await got(httpStub.url, {throwHttpErrors: false})
   await httpStub.stop()
 
-  const error = await t.throws(
-    got(httpStub.url, {throwHttpErrors: false, timeout: 500})
+  const error = await t.throwsAsync(
+    got(httpStub.url, {throwHttpErrors: false, retry: 0})
   )
-  t.is(error.code, 'ETIMEDOUT')
+  t.is(error.code, 'ECONNREFUSED')
 })
 
 test('no requests', async t => {

@@ -17,28 +17,30 @@
     "src"
   ],
   "scripts": {
-    "test": "xo && ava",
-    "precommit": "lint-staged"
+    "test": "xo && ava"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "engines": {
     "node": ">=8.10"
   },
   "dependencies": {
-    "joi": "^13.4.0",
-    "micro": "^9.3.2",
+    "joi": "^14.3.0",
+    "micro": "^9.3.3",
     "openssl-self-signed-certificate": "^1.1.6"
   },
   "devDependencies": {
-    "ava": "^0.25.0",
-    "babel-eslint": "^8.2.3",
-    "got": "^8.3.1",
-    "husky": "^0.14.3",
-    "lint-staged": "^7.1.2",
-    "selfsigned": "^1.10.3",
-    "xo": "^0.21.1"
+    "ava": "^1.0.1",
+    "got": "^9.4.0",
+    "husky": "^1.2.1",
+    "lint-staged": "^8.1.0",
+    "selfsigned": "^1.10.4",
+    "xo": "^0.23.0"
   },
   "xo": {
-    "parser": "babel-eslint",
     "prettier": true,
     "space": true,
     "semicolon": false
