@@ -1,26 +1,26 @@
 import { SecureContextOptions } from 'tls'
 import { Url } from 'url'
 
-interface Options {
+export interface Options {
   https?: boolean | SecureContextOptions
 }
 
-interface Headers {
+export interface Headers {
   [s: string]: string
 }
 
-interface Request {
+export interface Request {
   method: string
   url: Url
   headers: Headers
   body: any
 }
 
-declare type Body = object | string | Buffer
+export declare type Body = object | string | Buffer
 
-declare type AddStubOptionsBodyCallback = (request: Request) => Body
+export declare type AddStubOptionsBodyCallback = (request: Request) => Body
 
-interface AddStubOptions {
+export interface AddStubOptions {
   statusCode?: number
   headers?: Headers
   body?: Body | AddStubOptionsBodyCallback

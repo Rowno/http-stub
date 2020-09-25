@@ -1,6 +1,6 @@
 // Modified fork of https://github.com/johncrisostomo/get-ssl-certificate
 import https from 'https'
-import {URL} from 'url'
+import { URL } from 'url'
 
 function pemEncode(rawCert) {
   const stringCert = rawCert.toString('base64')
@@ -22,11 +22,11 @@ export default function getCertificate(href) {
     port: url.port,
     agent: false,
     rejectUnauthorized: false,
-    ciphers: 'ALL'
+    ciphers: 'ALL',
   }
 
   return new Promise((resolve, reject) => {
-    const req = https.get(options, res => {
+    const req = https.get(options, (res) => {
       const certificate = res.socket.getPeerCertificate()
       if (!certificate) {
         return reject(new Error('The website did not provide a certificate'))

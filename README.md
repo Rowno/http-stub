@@ -16,7 +16,6 @@
 - Assertions are always attributed to tests and easy to debug.
 - HTTPS support.
 
-
 ## Install
 
 ```sh
@@ -25,7 +24,6 @@ yarn add --dev @rowno/http-stub
 npm install --save-dev @rowno/http-stub
 ```
 
-
 ## Usage
 
 ```js
@@ -33,45 +31,44 @@ import test from 'ava'
 import createHttpStub from '@rowno/http-stub'
 import got from 'got'
 
-test.beforeEach(async t => {
+test.beforeEach(async (t) => {
   // Create a fresh server instance for each test
   t.context.httpStub = await createHttpStub()
 })
 
-test.afterEach(t => {
+test.afterEach((t) => {
   // Verify that all the requests were stubbed
   t.context.httpStub.verify()
 })
 
-test.afterEach.always(async t => {
+test.afterEach.always(async (t) => {
   // Stop the server to free up the port
   await t.context.httpStub.stop()
 })
 
-test('can send a JSON POST', async t => {
+test('can send a JSON POST', async (t) => {
   // Add a response stub
   t.context.httpStub.addStub({
     statusCode: 202,
     delay: 100,
-    body: {wow: 'such response'}
+    body: { wow: 'such response' },
   })
 
   // Make a HTTP request to the stub server
   const response = await got(t.context.httpStub.url, {
     json: true,
-    body: {wow: 'such request'}
+    body: { wow: 'such request' },
   })
   // Get the request details
   const request = t.context.httpStub.requests[0]
 
   t.is(request.method, 'POST')
-  t.deepEqual(request.body, {wow: 'such request'})
+  t.deepEqual(request.body, { wow: 'such request' })
 
   t.is(response.statusCode, 202)
-  t.deepEqual(response.body, {wow: 'such response'})
+  t.deepEqual(response.body, { wow: 'such response' })
 })
 ```
-
 
 ## API
 
@@ -224,7 +221,6 @@ Utility assertion property that's true when the server has received exactly two 
 Type: `boolean`
 
 Utility assertion property that's true when the server has received exactly three requests.
-
 
 ## License
 

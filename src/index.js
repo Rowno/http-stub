@@ -8,7 +8,7 @@ const joi = require('joi')
 const selfSignedCert = require('openssl-self-signed-certificate')
 
 function sleep(ms) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
 }
@@ -18,35 +18,21 @@ const optionsSchema = joi
     https: [
       joi.bool(),
       joi.object({
-        key: joi
-          .alternatives()
-          .try(joi.binary(), joi.string())
-          .required(),
-        cert: joi
-          .alternatives()
-          .try(joi.binary(), joi.string())
-          .required(),
-        passphrase: joi.string()
-      })
-    ]
+        key: joi.alternatives().try(joi.binary(), joi.string()).required(),
+        cert: joi.alternatives().try(joi.binary(), joi.string()).required(),
+        passphrase: joi.string(),
+      }),
+    ],
   })
   .default()
 
 const stubSchema = joi
   .object({
-    statusCode: joi
-      .number()
-      .min(100)
-      .max(599)
-      .integer()
-      .default(200),
+    statusCode: joi.number().min(100).max(599).integer().default(200),
     headers: joi.object().pattern(/.*/, joi.string()),
     body: joi.any(),
-    delay: joi
-      .number()
-      .min(0)
-      .integer(),
-    networkError: joi.bool()
+    delay: joi.number().min(0).integer(),
+    networkError: joi.bool(),
   })
   .default()
 
@@ -70,20 +56,20 @@ class HttpStub {
       options.https = {
         key: selfSignedCert.key,
         cert: selfSignedCert.cert,
-        passphrase: selfSignedCert.passphrase
+        passphrase: selfSignedCert.passphrase,
       }
     }
 
     // Make private properties non-enumerable to make ava's magic assertions clean ✨
     Object.defineProperty(this, '_options', {
-      value: joi.attempt(options, optionsSchema)
+      value: joi.attempt(options, optionsSchema),
     })
     Object.defineProperty(this, '_handler', {
-      value: this._handler.bind(this)
+      value: this._handler.bind(this),
     })
     Object.defineProperty(this, '_server', {
       writable: true,
-      value: null
+      value: null,
     })
   }
 
@@ -104,7 +90,7 @@ class HttpStub {
       this._server.once('error', reject)
 
       this._server.listen(0, '127.0.0.1', () => {
-        const {port} = this._server.address()
+        const { port } = this._server.address()
 
         if (this._options.https) {
           this.url = `https://127.0.0.1:${port}`
@@ -124,7 +110,7 @@ class HttpStub {
     }
 
     return new Promise((resolve, reject) => {
-      this._server.close(error => {
+      this._server.close((error) => {
         if (error) {
           reject(error)
         } else {
@@ -151,8 +137,8 @@ class HttpStub {
       return
     }
 
-    let prettyRequests = this.unStubbedRequests.map(request => {
-      const clonedRequest = {...request}
+    let prettyRequests = this.unStubbedRequests.map((request) => {
+      const clonedRequest = { ...request }
       clonedRequest.url = clonedRequest.url.href
       return clonedRequest
     })
@@ -206,7 +192,7 @@ class HttpStub {
       method: req.method,
       url: url.parse(req.url, true),
       headers: req.headers,
-      body
+      body,
     }
 
     this.requests.push(request)
@@ -251,7 +237,7 @@ class HttpStub {
   }
 }
 
-module.exports = async options => {
+module.exports = async (options) => {
   const httpStub = new HttpStub(options)
   await httpStub.start()
   return httpStub
