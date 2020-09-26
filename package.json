@@ -29,29 +29,26 @@
     "node": ">=10"
   },
   "dependencies": {
-    "joi": "^14.3.0",
+    "@hapi/joi": "^16.0.0",
     "micro": "^9.3.3",
     "openssl-self-signed-certificate": "^1.1.6"
   },
   "devDependencies": {
-    "ava": "^1.0.1",
-    "babel-eslint": "^10.1.0",
+    "ava": "^3.12.1",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.12.0",
-    "got": "^9.4.0",
-    "husky": "^1.2.1",
-    "lint-staged": "^8.1.0",
+    "got": "^11.7.0",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "selfsigned": "^1.10.4"
   },
   "lint-staged": {
     "*.js": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ]
   },
   "eslintConfig": {
-    "parser": "babel-eslint",
     "extends": [
       "eslint:recommended",
       "prettier"
@@ -59,6 +56,9 @@
     "env": {
       "es2017": true,
       "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2018
     }
   },
   "prettier": {

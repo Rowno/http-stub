@@ -4,7 +4,7 @@ const querystring = require('querystring')
 const util = require('util')
 const https = require('https')
 const micro = require('micro')
-const joi = require('joi')
+const joi = require('@hapi/joi')
 const selfSignedCert = require('openssl-self-signed-certificate')
 
 function sleep(ms) {

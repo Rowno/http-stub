@@ -1,9 +1,9 @@
-import util from 'util'
-import test from 'ava'
-import got from 'got'
-import selfsigned from 'selfsigned'
-import createHttpStub from '../src'
-import getCertificate from './helpers/get-certificate'
+const util = require('util')
+const test = require('ava')
+const got = require('got')
+const selfsigned = require('selfsigned')
+const createHttpStub = require('../src')
+const getCertificate = require('./helpers/get-certificate')
 
 const generateCertificate = util.promisify(selfsigned.generate)
 
@@ -17,9 +17,9 @@ test('records a request', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {
-    json: true,
-    body: { wow: 'such request' },
+  await got.post(httpStub.url, {
+    json: { wow: 'such request' },
+    responseType: 'json',
     throwHttpErrors: false,
   })
 
@@ -40,9 +40,9 @@ test('stubs a response', async (t) => {
     body: { wow: 'such response' },
   })
 
-  const res = await got(httpStub.url, {
-    json: true,
-    body: { wow: 'such request' },
+  const res = await got.post(httpStub.url, {
+    json: { wow: 'such request' },
+    responseType: 'json',
     throwHttpErrors: false,
   })
 
@@ -79,9 +79,9 @@ test('supports json request bodies', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {
-    json: true,
-    body: { wow: 'such json' },
+  await got.post(httpStub.url, {
+    json: { wow: 'such json' },
+    responseType: 'json',
     throwHttpErrors: false,
   })
   const request = httpStub.requests[0]
@@ -94,9 +94,9 @@ test('supports urlencoded request bodies', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {
-    form: true,
-    body: { wow: 'such json' },
+  await got.post(httpStub.url, {
+    form: { wow: 'such json' },
+    responseType: 'json',
     throwHttpErrors: false,
   })
   const request = httpStub.requests[0]
@@ -112,7 +112,7 @@ test('supports plain text request bodies', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {
+  await got.post(httpStub.url, {
     body: 'wow, such text',
     headers: {
       'content-type': 'text/plain',
@@ -127,7 +127,7 @@ test('supports buffer request bodies', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  await got(httpStub.url, {
+  await got.post(httpStub.url, {
     body: Buffer.from('wow, such buffer'),
     headers: {
       'content-type': 'application/octet-stream',
@@ -143,9 +143,9 @@ test(`returns an error when there's no more stubs`, async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub
 
-  const error = await t.throwsAsync(got(httpStub.url, { json: true }))
-  t.is(error.statusCode, 418)
-  t.is(error.statusMessage, 'No Stubs')
+  const error = await t.throwsAsync(got(httpStub.url, { responseType: 'json' }))
+  t.is(error.response.statusCode, 418)
+  t.is(error.response.statusMessage, 'No Stubs')
   t.true(error.response.body.includes('🙅'))
 })
 
@@ -203,9 +203,9 @@ test(`the stub body can be a callback function`, async (t) => {
     },
   })
 
-  const res = await got(httpStub.url, {
-    json: true,
-    body: { wow: 'such request' },
+  const res = await got.post(httpStub.url, {
+    json: { wow: 'such request' },
+    responseType: 'json',
   })
 
   t.deepEqual(res.body, { wow: 'such body callback' })
@@ -219,9 +219,10 @@ test(`supports self signed https`, async (t) => {
 
   const error = await t.throwsAsync(got(httpStub.url))
   t.is(error.code, 'DEPTH_ZERO_SELF_SIGNED_CERT')
-  t.is(error.protocol, 'https:')
 
-  const response = await got(httpStub.url, { rejectUnauthorized: false })
+  const response = await got(httpStub.url, {
+    https: { rejectUnauthorized: false },
+  })
   t.is(response.body, 'such https, wow')
 })
 

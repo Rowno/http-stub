@@ -1,6 +1,6 @@
 // Modified fork of https://github.com/johncrisostomo/get-ssl-certificate
-import https from 'https'
-import { URL } from 'url'
+const https = require('https')
+const { URL } = require('url')
 
 function pemEncode(rawCert) {
   const stringCert = rawCert.toString('base64')
@@ -14,7 +14,7 @@ function pemEncode(rawCert) {
   return `-----BEGIN CERTIFICATE-----\r\n${cert}\r\n-----END CERTIFICATE-----\r\n`
 }
 
-export default function getCertificate(href) {
+module.exports = function getCertificate(href) {
   const url = new URL(href)
 
   const options = {
