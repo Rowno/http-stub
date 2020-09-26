@@ -17,7 +17,7 @@
     "src"
   ],
   "scripts": {
-    "test": "ava",
+    "test": "yarn lint && ava",
     "lint": "eslint '**/*.js'"
   },
   "husky": {

@@ -3,9 +3,6 @@ node_js:
   - '10'
   - '12'
   - '14'
-script:
-  - yarn lint
-  - yarn test
 cache:
   yarn: true
   directories:
