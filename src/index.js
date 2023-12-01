@@ -215,6 +215,9 @@ class HttpStub {
       await sleep(stub.delay)
     }
 
+    // Disable keep-alive by default to prevent server shutdown from hanging
+    res.setHeader('Connection', 'close')
+
     if (stub.headers) {
       for (const name of Object.keys(stub.headers)) {
         const value = stub.headers[name]
