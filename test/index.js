@@ -241,7 +241,8 @@ test('can stop the server', async (t) => {
   const error = await t.throwsAsync(
     got(httpStub.url, { throwHttpErrors: false, retry: 0 })
   )
-  t.is(error.code, 'ECONNREFUSED')
+  // Node <=18 returns ECONNREFUSED, Node >=20 returns ECONNRESET
+  t.true(error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET')
 })
 
 test('no requests', async (t) => {
