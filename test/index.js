@@ -65,16 +65,6 @@ test('can delay a response', async (t) => {
   t.true(duration >= 1000)
 })
 
-test('can simulate a network error', async (t) => {
-  const httpStub = await createHttpStub()
-  t.context.httpStub = httpStub
-
-  httpStub.addStub({ networkError: true })
-
-  const error = await t.throwsAsync(got(httpStub.url, { retry: 0 }))
-  t.is(error.code, 'ECONNRESET')
-})
-
 test('supports json request bodies', async (t) => {
   const httpStub = await createHttpStub()
   t.context.httpStub = httpStub

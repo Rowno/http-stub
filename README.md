@@ -140,12 +140,6 @@ Type: `integer`
 
 Delays the response by the given number of milliseconds. Useful for testing timeouts.
 
-###### networkError
-
-Type: `boolean`
-
-Simulates a `ECONNRESET` error by abruptly ending the connection. Useful for testing network error handling and retries.
-
 #### verify()
 
 Utility function for making sure all the requests were stubbed. It throws an exception if some of the requests weren't stubbed or if some of the stubs weren't used. Useful for calling in the `afterEach` test hook to make sure everything ran as expected.

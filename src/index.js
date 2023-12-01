@@ -32,7 +32,6 @@ const stubSchema = joi
     headers: joi.object().pattern(/.*/, joi.string()),
     body: joi.any(),
     delay: joi.number().min(0).integer(),
-    networkError: joi.bool(),
   })
   .default()
 
@@ -214,11 +213,6 @@ class HttpStub {
 
     if (stub.delay) {
       await sleep(stub.delay)
-    }
-
-    if (stub.networkError) {
-      req.destroy()
-      return
     }
 
     if (stub.headers) {

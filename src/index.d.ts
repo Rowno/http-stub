@@ -25,7 +25,6 @@ export interface AddStubOptions {
   headers?: Headers
   body?: Body | AddStubOptionsBodyCallback
   delay?: number
-  networkError?: boolean
 }
 
 export declare class HttpStub {
