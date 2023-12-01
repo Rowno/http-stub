@@ -1,4 +1,4 @@
-# http-stub [![Travis](https://travis-ci.com/Rowno/http-stub.svg?branch=master)](https://travis-ci.com/Rowno/http-stub)
+# http-stub
 
 > Simple HTTP stubbing library for Node.js.
 
