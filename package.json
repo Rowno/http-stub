@@ -18,30 +18,26 @@
   ],
   "scripts": {
     "test": "yarn lint && ava",
-    "lint": "eslint '**/*.js'"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "lint": "eslint '**/*.js'",
+    "prepare": "husky install"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "dependencies": {
-    "@hapi/joi": "^16.0.0",
+    "@hapi/joi": "^17.1.1",
     "micro": "^9.3.3",
     "openssl-self-signed-certificate": "^1.1.6"
   },
   "devDependencies": {
     "ava": "^3.12.1",
-    "eslint": "^7.9.0",
-    "eslint-config-prettier": "^6.12.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
     "got": "^11.7.0",
-    "husky": "^4.3.0",
-    "lint-staged": "^10.4.0",
-    "prettier": "^2.1.2",
-    "selfsigned": "^1.10.4"
+    "husky": "^8.0.0",
+    "lint-staged": "^15.1.0",
+    "prettier": "^3.1.0",
+    "selfsigned": "^2.4.1"
   },
   "lint-staged": {
     "*.js": [

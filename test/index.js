@@ -94,7 +94,7 @@ test('supports urlencoded request bodies', async (t) => {
   t.deepEqual(request.body, { wow: 'such json' })
   t.deepEqual(
     request.headers['content-type'],
-    'application/x-www-form-urlencoded'
+    'application/x-www-form-urlencoded',
   )
 })
 
@@ -239,7 +239,7 @@ test('can stop the server', async (t) => {
   await httpStub.stop()
 
   const error = await t.throwsAsync(
-    got(httpStub.url, { throwHttpErrors: false, retry: 0 })
+    got(httpStub.url, { throwHttpErrors: false, retry: 0 }),
   )
   // Node <=18 returns ECONNREFUSED, Node >=20 returns ECONNRESET
   t.true(error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET')

@@ -79,7 +79,7 @@ class HttpStub {
 
     if (this._options.https) {
       this._server = https.createServer(this._options.https, (req, res) =>
-        micro.run(req, res, this._handler)
+        micro.run(req, res, this._handler),
       )
     } else {
       this._server = micro(this._handler)
